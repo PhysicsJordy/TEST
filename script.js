@@ -4,7 +4,7 @@ const ctx = canvas.getContext('2d');
 const numParticles = 5;
 const particleRadius = 10;
 const springLength = 50;
-const springConstant = 0.1;
+const springConstant = 0.02; // 용수철 상수 조정
 const damping = 0.98;
 const particles = [];
 
@@ -83,6 +83,23 @@ function update() {
             p.vy *= damping;
             p.x += p.vx;
             p.y += p.vy;
+
+            // 박스 밖으로 나가지 않도록 제한
+            if (p.x < particleRadius) {
+                p.x = particleRadius;
+                p.vx = 0;
+            } else if (p.x > canvas.width - particleRadius) {
+                p.x = canvas.width - particleRadius;
+                p.vx = 0;
+            }
+
+            if (p.y < particleRadius) {
+                p.y = particleRadius;
+                p.vy = 0;
+            } else if (p.y > canvas.height - particleRadius) {
+                p.y = canvas.height - particleRadius;
+                p.vy = 0;
+            }
         }
 
         ctx.beginPath();
@@ -122,6 +139,20 @@ canvas.addEventListener('mousemove', (e) => {
         const mousePos = getMousePos(canvas, e);
         draggingParticle.x = mousePos.x + offsetX;
         draggingParticle.y = mousePos.y + offsetY;
+
+        // 박스 밖으로 나가지 않도록 제한
+        if (draggingParticle.x < particleRadius) {
+            draggingParticle.x = particleRadius;
+        } else if (draggingParticle.x > canvas.width - particleRadius) {
+            draggingParticle.x = canvas.width - particleRadius;
+        }
+
+        if (draggingParticle.y < particleRadius) {
+            draggingParticle.y = particleRadius;
+        } else if (draggingParticle.y > canvas.height - particleRadius) {
+            draggingParticle.y = canvas.height - particleRadius;
+        }
+
         draggingParticle.vx = 0;
         draggingParticle.vy = 0;
     }
