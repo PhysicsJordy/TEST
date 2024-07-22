@@ -8,6 +8,9 @@ const springConstant = 0.1;
 const damping = 0.98;
 const particles = [];
 
+let draggingParticle = null;
+let offsetX, offsetY;
+
 // 초기 입자 위치 및 속도 설정
 for (let i = 0; i < numParticles; i++) {
     for (let j = 0; j < numParticles; j++) {
@@ -75,10 +78,12 @@ function update() {
 
     // 입자 위치 업데이트
     for (let p of particles) {
-        p.vx *= damping;
-        p.vy *= damping;
-        p.x += p.vx;
-        p.y += p.vy;
+        if (p !== draggingParticle) {
+            p.vx *= damping;
+            p.vy *= damping;
+            p.x += p.vx;
+            p.y += p.vy;
+        }
 
         ctx.beginPath();
         ctx.arc(p.x, p.y, particleRadius, 0, Math.PI * 2);
@@ -89,5 +94,45 @@ function update() {
 
     requestAnimationFrame(update);
 }
+
+function getMousePos(canvas, evt) {
+    const rect = canvas.getBoundingClientRect();
+    return {
+        x: evt.clientX - rect.left,
+        y: evt.clientY - rect.top
+    };
+}
+
+canvas.addEventListener('mousedown', (e) => {
+    const mousePos = getMousePos(canvas, e);
+    for (let p of particles) {
+        const dx = p.x - mousePos.x;
+        const dy = p.y - mousePos.y;
+        if (Math.sqrt(dx * dx + dy * dy) < particleRadius) {
+            draggingParticle = p;
+            offsetX = dx;
+            offsetY = dy;
+            break;
+        }
+    }
+});
+
+canvas.addEventListener('mousemove', (e) => {
+    if (draggingParticle) {
+        const mousePos = getMousePos(canvas, e);
+        draggingParticle.x = mousePos.x + offsetX;
+        draggingParticle.y = mousePos.y + offsetY;
+        draggingParticle.vx = 0;
+        draggingParticle.vy = 0;
+    }
+});
+
+canvas.addEventListener('mouseup', () => {
+    draggingParticle = null;
+});
+
+canvas.addEventListener('mouseleave', () => {
+    draggingParticle = null;
+});
 
 update();
